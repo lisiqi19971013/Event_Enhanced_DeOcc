@@ -1,7 +1,7 @@
 import sys
 sys.path.append('..')
-from utils.dataset import dataset1 as dataset
-from model.model_full import model1 as M
+from utils import dataset
+from model.model_full import model as M
 import glob
 import os
 
@@ -24,7 +24,7 @@ def copyModel(rundir):
 
 if __name__ == '__main__':
     import os
-    os.environ["CUDA_VISIBLE_DEVICES"] = '4,5'
+    os.environ["CUDA_VISIBLE_DEVICES"] = '1,2'
     import shutil
     import torch
     from torch import nn
@@ -36,19 +36,17 @@ if __name__ == '__main__':
     from model import Metric, TimeRecorder
     from lpips import lpips
     import datetime
-    # from focal_frequency_loss import FocalFrequencyLoss as FFL
     from model.loss import Loss
 
     device = 'cuda'
     random_seed = 1996
-    batch_size = 12
-    lr = 1e-3
+    batch_size = 16
+    lr = 2e-3
     alpha = 0.1
-    beta = 1
-    gamma = 0.00
-    epochs = 800
+    gamma = 0.05
+    epochs = 1200
 
-    run_dir = './log/' + datetime.date.today().__str__() + '/bs%d_wo_snn_wo_lcmp'%(batch_size)
+    run_dir = './log/' + datetime.date.today().__str__()
     print('rundir:', os.path.abspath(run_dir))
 
     torch.backends.cudnn.deterministic = True
@@ -68,7 +66,6 @@ if __name__ == '__main__':
 
     loss_l1 = nn.L1Loss()
     loss_lpips = lpips.LPIPS(net='vgg', spatial=False).cuda()
-    # ffl = FFL(loss_weight=1.0, alpha=1.0)
     loss_cmp = Loss()
 
     tb = SummaryWriter(run_dir)
@@ -112,9 +109,6 @@ if __name__ == '__main__':
 
     for epoch in range(cur_epoch, epochs):
         model.train()
-        if (epoch+1)%500 == 0:
-            for param_group in optimizer.param_groups:
-                param_group['lr'] = param_group['lr'] * 0.1
 
         for i, (event_vox, img, gt_img, mask) in enumerate(trainLoader):
             event_vox = event_vox.cuda()
@@ -128,10 +122,9 @@ if __name__ == '__main__':
 
             Lpips = torch.sum(loss_lpips.forward(output, gt_img, normalize=True)) / batch_size
             L1Loss = loss_l1(output, gt_img)
-            # ffLoss = ffl(output, gt_img)
             CmpLoss = loss_cmp.CompareLoss(output, gt_img, img[:, 15:18, ...])
 
-            Loss = L1Loss + alpha * Lpips + gamma * CmpLoss #+ beta * ffLoss
+            Loss = L1Loss + alpha * Lpips + gamma * CmpLoss
 
             if Loss.item() >= 50:
                 print('warning')
@@ -155,7 +148,7 @@ if __name__ == '__main__':
                           ", Cost Time: " + dt + ", Remain Time: " + remain_time + ', End At: ' + end_time
                 showMessage(message, os.path.join(run_dir, 'log.txt'))
 
-        # scheduler.step()
+        scheduler.step()
         avg = trainMetirc.get_average_epoch()
         tb.add_scalar('Train_Loss/L1 Loss', avg[0], epoch)
         tb.add_scalar('Train_Loss/Lpips Loss', avg[1], epoch)
@@ -215,15 +208,12 @@ if __name__ == '__main__':
             message = '============Epoch %d test done, loss:%f, PSNR:%f, SSIM:%f============' % (epoch, avg[3], psnr, ssim)
             showMessage(message, os.path.join(run_dir, 'log.txt'))
 
-        # pla_lr_scheduler.step(avg[3])
         for param_group in optimizer.param_groups:
             print(param_group['lr'])
-            # break
         tb.add_scalar('Lr', param_group['lr'], epoch)
 
         model_dict = {'epoch': epoch, 'state_dict': model.state_dict(), 'optimizer': optimizer.state_dict()}
         early_stopping(avg[3], model_dict, epoch, run_dir)
-        # torch.save(model_dict, os.path.join(run_dir, "checkpoint_%d_%f_%f.pth"%(epoch, psnr, ssim)))
         if ssim_list[-1] == max(ssim_list):
             torch.save(model_dict, os.path.join(run_dir, "checkpoint_max_ssim.pth"))
         if psnr_list[-1] == max(psnr_list):

@@ -45,7 +45,6 @@ class SnnEncoder(nn.Module):
         self.conv3 = self.slayer3.conv(18, hidden_number, kernelSize=1, padding=0)
 
     def forward(self, spikeInput):
-        # Bs x channel x H x W x ts
         psp0 = self.slayer1.psp(spikeInput)
         psp1 = self.conv1(psp0)
         spikes_1 = self.slayer1.spike(psp1)
@@ -64,11 +63,9 @@ class EventEncoder(nn.Module):
                  scaleRef=[1, 1, 1], tauRho=[1, 1, 10], scaleRho=[10, 10, 100], layers=[128, 128, 128, 256, 256, 512, 512], norm=False):
         super(EventEncoder, self).__init__()
         self.SNN = SnnEncoder(netParams, hidden_number, theta, tauSr, tauRef, scaleRef, tauRho, scaleRho)
-        # self.IN = nn.InstanceNorm2d(hidden_number)
         self.IN = nn.BatchNorm2d(hidden_number)
 
         self.layers = layers
-        # self.conv1 = nn.Sequential(nn.Conv2d(hidden_number, 64, 3, stride=1, padding=1), nn.BatchNorm2d(64)) if norm else nn.Conv2d(hidden_number, 64, 3, stride=1, padding=1)
         self.conv1 = nn.Sequential(CondConv2D(hidden_number, 64, 3, stride=1, padding=1), nn.BatchNorm2d(64)) if norm else nn.Conv2d(hidden_number, 64, 3, stride=1, padding=1)
         self.down0 = down_light(64, self.layers[0], norm=norm)
         for k in range(1, len(self.layers)):
@@ -82,36 +79,6 @@ class EventEncoder(nn.Module):
         output = []
 
         x = F.leaky_relu(self.conv1(snn_fea), negative_slope=0.1)
-        output.append(x)
-        for k in range(len(self.layers)):
-            x = getattr(self, 'down%d'%k)(x)
-            output.append(x)
-        return output
-
-
-class EventEncoder1(nn.Module):
-    def __init__(self, netParams, hidden_number=32, theta=[3, 5, 10], tauSr=[1, 2, 4], tauRef=[1, 2, 4],
-                 scaleRef=[1, 1, 1], tauRho=[1, 1, 10], scaleRho=[10, 10, 100], layers=[128, 128, 128, 256, 256, 512, 512], norm=False):
-        super(EventEncoder1, self).__init__()
-        # self.SNN = SnnEncoder(netParams, hidden_number, theta, tauSr, tauRef, scaleRef, tauRho, scaleRho)
-        # self.IN = nn.InstanceNorm2d(hidden_number)
-        # self.IN = nn.BatchNorm2d(hidden_number)
-
-        self.layers = layers
-        # self.conv1 = nn.Sequential(nn.Conv2d(hidden_number, 64, 3, stride=1, padding=1), nn.BatchNorm2d(64)) if norm else nn.Conv2d(hidden_number, 64, 3, stride=1, padding=1)
-        self.conv1 = nn.Sequential(CondConv2D(hidden_number, 64, 3, stride=1, padding=1), nn.BatchNorm2d(64)) if norm else nn.Conv2d(hidden_number, 64, 3, stride=1, padding=1)
-        self.down0 = down_light(64, self.layers[0], norm=norm)
-        for k in range(1, len(self.layers)):
-            setattr(self, 'down%d'%k, down_light(self.layers[k-1], self.layers[k], norm=norm))
-
-    def forward(self, events):
-        # bs, _, H, W, Ts = events.shape
-        # snn_fea = self.SNN(events)
-        # snn_fea = torch.mean(snn_fea, dim=-1)
-        # snn_fea = self.IN(snn_fea)
-        output = []
-
-        x = F.leaky_relu(self.conv1(events), negative_slope=0.1)
         output.append(x)
         for k in range(len(self.layers)):
             x = getattr(self, 'down%d'%k)(x)

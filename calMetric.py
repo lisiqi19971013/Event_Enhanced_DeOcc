@@ -15,21 +15,8 @@ def calssim(gt, pred):
 
 psnrList = []
 ssimList = []
-# path = '/home/lisiqi/code/MIR/log_ablation/2022-05-31/bs12_esai_snn/output/'
-# path = '/home/lisiqi/code/MIR/log/2022-04-10/bs16_newCmp+0.050000cmploss_model/output_check/'
-# path = '/home/lisiqi/code/MIR/log_ablation/2022-05-31/bs12_esai_snn/output/'
-# path = '/home/lisiqi/code/MIR/log_ablation/2022-05-31/bs12_only_event/output/'
-# path = '/home/lisiqi/code/MIR/log_ablation/2022-05-31/bs12_only_frame/output/'
-# path = '/home/lisiqi/code/MIR/log_ablation/2022-05-31/bs12_wo_event_surface/output/'
-# path = '/home/lisiqi/code/MIR/log_ablation/2022-05-31/bs12_wo_fea_fuse/output/'
-# path = '/home/lisiqi/code/MIR/log_ablation/2022-05-31/bs12_wo_ms_up/output/'
 
-
-# path = '/home/lisiqi/code_repo/DeOccNet/log/2022-03-20/bs8/output_DeOccNet/'
-# path = '/home/lisiqi/code_repo/E-SAI/codes/log/2022-03-19/bs8/output/'
-# path = '/home/lisiqi/code/MIR/log/2022-04-13/bs12_wo_lcmp/output_wo_lcmp/'
-# path = '/home/lisiqi/code/MIR/log/2022-04-13/bs12_wo_snn/output_wo_snn/'
-path = '/home/lisiqi/code/MIR/log/2022-04-13/bs12_wo_snn_wo_lcmp/output_wo_snn_wo_lcmp/'
+path = './log/output'
 
 psnr = 0
 ssim = 0
@@ -44,14 +31,13 @@ ssim_outdoor = 0
 count_outdoor = 0
 
 for k in range(42):
-    op = cv2.imread(os.path.join(path, '%d_output.jpg' % k))
-    gt = cv2.imread(os.path.join(path, '%d_gt.jpg' % k))
-    # gt = gt.astype(np.float32) / 255.0
-    # op = op.astype(np.float32) / 255.0
+    op = cv2.imread(os.path.join(path, '%d_output.png' % k))
+    gt = cv2.imread(os.path.join(path, '%d_gt.png' % k))
+
     p = calpsnr(gt, op)
     s = calssim(gt, op)
     print(k, p, s)
-    # break
+
     psnr += p
     ssim += s
     count += 1

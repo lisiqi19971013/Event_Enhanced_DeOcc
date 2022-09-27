@@ -34,15 +34,6 @@ class Loss(nn.Module):
 
     def CompareLoss(self, output, gt, neg_sample):
 
-        # bs, C, H, W = neg_sample.shape
-        # neg_sample = neg_sample.reshape(bs, -1, 3, H, W)
-        # neg_sample = torch.mean(neg_sample, dim=1)
-
-        # neg_sample0 = torch.zeros([bs, H, W])
-        # for k in range(int(C/3)):
-        #     neg_sample0 += neg_sample[:, k*3:k*3+3, ...]
-        # neg_sample0 /= int(C/3)
-
         output_fea = self.net(output)
         pos_fea = self.net(gt)
         neg_fea = self.net(neg_sample)
@@ -53,7 +44,5 @@ class Loss(nn.Module):
 
         for i in range(2):
             loss_cmp += weight1[i] * self.L1(output_fea[i], pos_fea[i]) / self.L1(output_fea[i], neg_fea[i])
-            # loss_cmp += weight1[i] * self.L1(output_fea[i], neg_fea[i])
 
         return loss_cmp
-        # return pos_fea, neg_fea

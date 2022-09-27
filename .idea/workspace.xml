@@ -67,6 +67,9 @@
       <module name="MIR" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -86,6 +89,9 @@
       <module name="MIR" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -148,6 +154,7 @@
       <workItem from="1655957879966" duration="12000" />
       <workItem from="1657948949211" duration="11000" />
       <workItem from="1664242146407" duration="1797000" />
+      <workItem from="1664245273653" duration="133000" />
     </task>
     <servers />
   </component>

@@ -8,7 +8,6 @@ from torch.nn.modules.conv import _ConvNd
 from torch.nn.modules.utils import _pair
 from torch.nn.parameter import Parameter
 import numpy as np
-from model.trans import Attention
 
 
 def closest_larger_multiple_of_minimum_size(size, minimum_size):

@@ -59,7 +59,6 @@ class EventFrameDecoder(nn.Module):
             x = getattr(self, 'up%d'%(len(self.layers)-k))(x, x2)
 
         x = self.conv_out(x)
-        # x = self._size_adapter.unpad(x)
         return x
 
 
